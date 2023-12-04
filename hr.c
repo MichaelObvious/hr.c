@@ -372,7 +372,7 @@ int main(int argc, const char** argv) {
 
         time_t t = time(NULL);
         struct tm *tm = localtime(&t);
-        fprintf(sink, "\r[ ");
+        fprintf(sink, "\e[J\33[2K\r[ ");
         hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon, tm->tm_year, &progress);
         fprintf(sink, " | ");
 
