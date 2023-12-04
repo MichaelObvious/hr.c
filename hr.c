@@ -375,15 +375,15 @@ int main(int argc, const char** argv) {
         fprintf(stdout, "\e[J\33[2K\r");
 
 		fprintf(sink, "[ ");
-        hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon, tm->tm_year, &progress);
+        hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon, tm->tm_year+1900, &progress);
         fprintf(sink, " | ");
 
 		// the `hour_name` function modifies the struct
         tm = localtime(&t);
 
-        day_name(sink, tm->tm_mday, tm->tm_mon+1, tm->tm_year);
+        day_name(sink, tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900);
         fprintf(sink, " | ");
-        year_name(sink, tm->tm_year);
+        year_name(sink, tm->tm_year+1900);
         fprintf(sink, " ]");
 
 		fclose(sink);
