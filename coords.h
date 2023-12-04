@@ -1,2 +1,3 @@
-float LAT = 0;
-float LON = 0;
+double LAT = 0;
+double LON = 0;
+double ELEV = 0;
