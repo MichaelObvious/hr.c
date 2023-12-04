@@ -155,27 +155,31 @@ void day_name(FILE* sink, int day, int month, int year) {
         && day != idus && day != idus-1) {
 		fprintf(sink, "a. d. ");
 
-		if (day > kalendae && day < nonae)
+		if (day > kalendae && day < nonae) {
 			roman_numeral(sink, nonae+1-day);
-		else if (day > kalendae && day < idus)
+			fprintf(sink, " ");
+		} else if (day > kalendae && day < idus) {
 			roman_numeral(sink, idus+1-day);
-		else if (day > kalendae)
+			fprintf(sink, " ");
+		} else if (day > kalendae) {
 			roman_numeral(sink, mlength+2-day);
+			fprintf(sink, " ");
+		}
     } else if (day == mlength || day == nonae-1 || day == idus-1) {
-		fprintf(sink, "Prid.");
+		fprintf(sink, "Prid. ");
     }
 	
 	if (day == kalendae) {
-		fprintf(sink, " Kal. ");
+		fprintf(sink, "Kal. ");
 		month_name(sink, month);
     } else if (day <= nonae) {
-		fprintf(sink, " Nōn. ");
+		fprintf(sink, "Nōn. ");
 		month_name(sink, month);
 	} else if (day <= idus) {
-		fprintf(sink, " Eid. ");
+		fprintf(sink, "Eid. ");
 		month_name(sink, month);
 	} else {
-		fprintf(sink, " Kal. ");
+		fprintf(sink, "Kal. ");
 		month_name(sink, (month)%12 + 1);
     }
 }
