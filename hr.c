@@ -223,7 +223,7 @@ void day_calc(int day, int month, int year, double f, double l_w, double elevati
 	*sunset = (j_set - 2440587.5) * 86400;
 }
 
-void hour_name(FILE* sink, int hour, int minute, int day, int month, int year) {
+void hour_name(FILE* sink, int hour, int minute, int day, int month, int year, double* progress) {
 	double yesterday_sunrise, yesterday_sunset;
 	double today_sunrise, today_sunset;
 	double tomorrow_sunrise, tomorrow_sunset;
@@ -270,6 +270,7 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year) {
 	int current_time = hour * 60 + minute;
 
 	if (current_time >= rise_time && current_time < set_time) {
+		*progress = (double)((current_time - rise_time) % hour_duration) / (double) hour_duration;
 		switch((current_time - rise_time) / hour_duration) {
 			case 0:
 				fprintf(sink, "prīma");
@@ -315,8 +316,10 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year) {
 		int vigilia; 
 		if (current_time < rise_time) {
 			vigilia = (current_time + 24 * 60 - prev_set_time) / prev_vigilia_duration;
+			*progress = (double)((current_time + 24 * 60 - prev_set_time) % prev_vigilia_duration) / (double) prev_vigilia_duration;
 		} else {
 			vigilia = (current_time - set_time) / next_vigilia_duration;
+			*progress = (double)((current_time - set_time) % next_vigilia_duration) / (double) next_vigilia_duration;
 		}
 
 		switch (vigilia) {
@@ -339,24 +342,44 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year) {
     }
 }
 
+char buffer[512] = {0};
+
 int main(int argc, const char** argv) {
     int watch = argc > 1 && strcmp(argv[1], "-w") == 0;
 
+	double progress = 0;
+
     do {
+		memset(buffer, 0, sizeof(buffer));
+		FILE* sink = fmemopen(buffer, sizeof(buffer), "w");
+
         time_t t = time(NULL);
         struct tm *tm = localtime(&t);
-
-        fprintf(stdout, "\r[ ");
-        hour_name(stdout, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon, tm->tm_year);
-        fprintf(stdout, " | ");
+        fprintf(sink, "\r[ ");
+        hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon, tm->tm_year, &progress);
+        fprintf(sink, " | ");
 
 		// the `hour_name` function modifies the struct
         tm = localtime(&t);
 
-        day_name(stdout, tm->tm_mday, tm->tm_mon+1, tm->tm_year);
-        fprintf(stdout, " | ");
-        year_name(stdout, tm->tm_year);
-        fprintf(stdout, " ]");
+        day_name(sink, tm->tm_mday, tm->tm_mon+1, tm->tm_year);
+        fprintf(sink, " | ");
+        year_name(sink, tm->tm_year);
+        fprintf(sink, " ]");
+
+		fclose(sink);
+		
+		int buf_len = strlen(buffer);
+		int bar_width = (int) (progress * (double) buf_len);
+		
+		fprintf(stdout, "\033[4m");
+		for (int i = 0; i < buf_len; i++) {
+			fputc(buffer[i], stdout);
+			if (i == bar_width || i + 1 == buf_len) {
+				fprintf(stdout, "\033[0m");
+			}
+		}
+
         fflush(stdout);
 
         usleep(500*1000);
