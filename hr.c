@@ -247,17 +247,19 @@ void hour_name(FILE* sink, int hour, int minute) {
 }
 
 int main(int argc, const char** argv) {
-    time_t t = time(NULL);
-    struct tm *tm = localtime(&t);
     int watch = argc > 1 && strcmp(argv[1], "-w") == 0;
 
     do {
-        fprintf(stdout, "\r");
+        time_t t = time(NULL);
+        struct tm *tm = localtime(&t);
+
+        fprintf(stdout, "\r[ ");
         hour_name(stdout, tm->tm_hour, tm->tm_min);
         fprintf(stdout, " | ");
         day_name(stdout, tm->tm_mday, tm->tm_mon+1, tm->tm_year);
         fprintf(stdout, " | ");
         year_name(stdout, tm->tm_year);
+        fprintf(stdout, " ]");
         usleep(10*1000);
         fflush(stdout);
     } while (watch);
