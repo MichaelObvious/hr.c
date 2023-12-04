@@ -345,7 +345,24 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year, d
 char buffer[512] = {0};
 
 int main(int argc, const char** argv) {
-    int watch = argc > 1 && strcmp(argv[1], "-w") == 0;
+	int watch = 0;
+	int pbar = 0;
+
+	for (int i = 1; i < argc; i++) {
+    	if (strcmp(argv[i], "-w") == 0) {
+			watch = 1;
+		} else if (strcmp(argv[i], "-p") == 0) {
+			pbar = 1;
+		} else if (strcmp(argv[i], "-h") == 0) {
+			printf("Usage: %s [-h] [-w] [-p]\n", argv[0]);
+			printf("\n");
+			printf("Options:\n");
+			printf("    -h  print help message and exit.\n");
+			printf("    -w  watch mode: continue running and updating.\n");
+			printf("    -p  show progress bar of the current hour/vigil.\n");
+			return 0;
+		}
+	}
 
 	double progress = 0;
 
@@ -372,10 +389,11 @@ int main(int argc, const char** argv) {
 		int buf_len = strlen(buffer);
 		int bar_width = (int) (progress * (double) buf_len);
 		
-		fprintf(stdout, "\033[4m");
+		if (pbar)
+			fprintf(stdout, "\033[4m");
 		for (int i = 0; i < buf_len; i++) {
 			fputc(buffer[i], stdout);
-			if (i == bar_width || i + 1 == buf_len) {
+			if (pbar && (i == bar_width || i + 1 == buf_len)) {
 				fprintf(stdout, "\033[0m");
 			}
 		}
