@@ -346,25 +346,50 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year, d
     }
 }
 
+void print_usage(FILE* sink, char* program) {
+	fprintf(sink, "Usage: %s [-h] [-w] [-p]\n", program);
+	fprintf(sink, "\n");
+	fprintf(sink, "Options:\n");
+	fprintf(sink, "    -h  print help message and exit.\n");
+	fprintf(sink, "    -w  watch mode: continue running and updating.\n");
+	fprintf(sink, "    -p  show progress bar of the current hour/vigil.\n");
+}
+
 char buffer[512] = {0};
 
-int main(int argc, const char** argv) {
+int main(int argc, char** argv) {
 	int watch = 0;
 	int pbar = 0;
 
 	for (int i = 1; i < argc; i++) {
+		if (*argv[i] != '-') {
+			printf("Unknown option: `%s`.\n", argv[i]);
+			return 1;
+		}
+
+		for (char* c = argv[i]+1; *c != 0; c++) {
+			switch (*c)
+			{
+			case 'w':
+				watch = 1;
+				break;
+			case 'p':
+				pbar = 1;
+				break;
+			case 'h':
+				print_usage(stdout, argv[0]);
+				return 0;
+			default:
+				printf("Unknown option: `%s`.\n", argv[i]);
+				return 1;
+			}
+		}
     	if (strcmp(argv[i], "-w") == 0) {
-			watch = 1;
+			
 		} else if (strcmp(argv[i], "-p") == 0) {
-			pbar = 1;
+			
 		} else if (strcmp(argv[i], "-h") == 0) {
-			printf("Usage: %s [-h] [-w] [-p]\n", argv[0]);
-			printf("\n");
-			printf("Options:\n");
-			printf("    -h  print help message and exit.\n");
-			printf("    -w  watch mode: continue running and updating.\n");
-			printf("    -p  show progress bar of the current hour/vigil.\n");
-			return 0;
+			
 		}
 	}
 
@@ -379,7 +404,7 @@ int main(int argc, const char** argv) {
         fprintf(stdout, "\e[J\33[2K\r");
 
 		fprintf(sink, "[ ");
-        hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon, tm->tm_year+1900, &progress);
+        hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900, &progress);
         fprintf(sink, " | ");
 
 		// the `hour_name` function modifies the struct
@@ -395,12 +420,16 @@ int main(int argc, const char** argv) {
 		int buf_len = strlen(buffer);
 		int bar_width = (int) (progress * (double) buf_len);
 		
+		// char buf = 0;
 		if (pbar)
 			fprintf(stdout, "\033[4m");
+		int end_placed = 0;
 		for (int i = 0; i < buf_len; i++) {
+			// buf = buffer[i];
 			fputc(buffer[i], stdout);
-			if (pbar && (i == bar_width || i + 1 == buf_len)) {
+			if (pbar && (buffer[i] != '\xC4' || buffer[i] != '\xC5') && !end_placed && (i >= bar_width || i + 1 == buf_len)) {
 				fprintf(stdout, "\033[0m");
+				end_placed = 1;
 			}
 		}
 
