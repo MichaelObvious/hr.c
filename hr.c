@@ -427,7 +427,7 @@ int main(int argc, char** argv) {
 		for (int i = 0; i < buf_len; i++) {
 			// buf = buffer[i];
 			fputc(buffer[i], stdout);
-			if (pbar && (buffer[i] != '\xC4' || buffer[i] != '\xC5') && !end_placed && (i >= bar_width || i + 1 == buf_len)) {
+			if (pbar && (buffer[i] != '\xC4' && buffer[i] != '\xC5') && !end_placed && (i >= bar_width || i + 1 == buf_len)) {
 				fprintf(stdout, "\033[0m");
 				end_placed = 1;
 			}
