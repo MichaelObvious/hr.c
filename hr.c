@@ -348,7 +348,7 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year, d
 
 void print_usage(FILE* sink, char* program) {
 	fprintf(sink, "Usage: %s [-h] [-w] [-p]\n", program);
-	fprintf(sink, "\n");
+	// fprintf(sink, "\n");
 	fprintf(sink, "Options:\n");
 	fprintf(sink, "    -h  print help message and exit.\n");
 	fprintf(sink, "    -w  watch mode: continue running and updating.\n");
@@ -363,7 +363,8 @@ int main(int argc, char** argv) {
 
 	for (int i = 1; i < argc; i++) {
 		if (*argv[i] != '-') {
-			printf("Unknown option: `%s`.\n", argv[i]);
+			fprintf(stderr, "[ERROR]: Unexpected argument: `%s`.\n\n", argv[i]);
+			print_usage(stderr, argv[0]);
 			return 1;
 		}
 
@@ -380,7 +381,8 @@ int main(int argc, char** argv) {
 				print_usage(stdout, argv[0]);
 				return 0;
 			default:
-				printf("Unknown option: `%s`.\n", argv[i]);
+				fprintf(stderr, "[ERROR]: Unknown option: `%s`.\n\n", argv[i]);
+				print_usage(stderr, argv[0]);
 				return 1;
 			}
 		}
