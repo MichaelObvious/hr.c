@@ -365,9 +365,9 @@ void print_stats(FILE* sink) {
 	double tomorrow_sunrise, tomorrow_sunset;
 
 	// no problem for month, it automatically fixes itself
-	day_calc(day-1, month, year, LAT, LON, ELEV, &yesterday_sunrise, &yesterday_sunset);
-	day_calc(day, month, year, LAT, LON, ELEV, &today_sunrise, &today_sunset);
-	day_calc(day+1, month, year, LAT, LON, ELEV, &tomorrow_sunrise, &tomorrow_sunset);
+	day_calc(day-1, month, year, LAT, LON, ELE, &yesterday_sunrise, &yesterday_sunset);
+	day_calc(day, month, year, LAT, LON, ELE, &today_sunrise, &today_sunset);
+	day_calc(day+1, month, year, LAT, LON, ELE, &tomorrow_sunrise, &tomorrow_sunset);
 
     t = yesterday_sunset;
     tm = localtime(&t);
