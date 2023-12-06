@@ -227,7 +227,7 @@ void day_calc(int day, int month, int year, double f, double l_w, double elevati
 	*sunset = (j_set - 2440587.5) * 86400;
 }
 
-void hour_name(FILE* sink, int hour, int minute, int day, int month, int year, double* progress) {
+void hour_name(FILE* sink, int hour, int minute, int sec, int day, int month, int year, double* progress) {
 	double yesterday_sunrise, yesterday_sunset;
 	double today_sunrise, today_sunset;
 	double tomorrow_sunrise, tomorrow_sunset;
@@ -240,19 +240,19 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year, d
 	struct tm *tm;
     time_t t = yesterday_sunset;
     tm = localtime(&t);
-	int prev_set_time = tm->tm_hour * 60 + tm->tm_min;
+	int prev_set_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
 
     t = today_sunrise;
     tm = localtime(&t);
-	int rise_time = tm->tm_hour * 60 + tm->tm_min;
+	int rise_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
 
     t = today_sunset;
     tm = localtime(&t);
-	int set_time = tm->tm_hour * 60 + tm->tm_min;
+	int set_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
 
     t = tomorrow_sunrise;
     tm = localtime(&t);
-	int snd_rise_time = tm->tm_hour * 60 + tm->tm_min;
+	int snd_rise_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
 
 	// printf("%02d:%02d\n", prev_set_time/60, prev_set_time%60);
 	// printf("%02d:%02d - %02d:%02d\n", rise_time/60, rise_time%60, set_time/60, set_time%60);
@@ -262,16 +262,16 @@ void hour_name(FILE* sink, int hour, int minute, int day, int month, int year, d
 	int hour_duration = daylight_duration / 12;
 	// printf("%02d:%02d\n", hour_duration/60, hour_duration%60);
 
-	int prev_night_duration = 24 * 60 - prev_set_time + rise_time;
+	int prev_night_duration = 24 * 3600 - prev_set_time + rise_time;
 	int prev_vigilia_duration = prev_night_duration / 4;
-	int next_night_duration = 24 * 60 - set_time + snd_rise_time;
+	int next_night_duration = 24 * 3600 - set_time + snd_rise_time;
 	int next_vigilia_duration = next_night_duration / 4;
 	// printf("%02d:%02d\n", prev_night_duration/60, prev_night_duration%60);
 	// printf("%02d:%02d\n", next_night_duration/60, next_night_duration%60);
 	// printf("%02d:%02d\n", prev_vigilia_duration/60, prev_vigilia_duration%60);
 	// printf("%02d:%02d\n", next_vigilia_duration/60, next_vigilia_duration%60);
 
-	int current_time = hour * 60 + minute;
+	int current_time = hour * 3600 + minute * 60 + sec;
 
 	if (current_time >= rise_time && current_time < set_time) {
 		*progress = (double)((current_time - rise_time) % hour_duration) / (double) hour_duration;
@@ -355,7 +355,8 @@ void print_usage(FILE* sink, char* program) {
 	fprintf(sink, "    -p  show progress bar of the current hour/vigil.\n");
 }
 
-char buffer[512] = {0};
+#define BUF_SIZE 128
+char buffer[BUF_SIZE+1] = {0};
 
 int main(int argc, char** argv) {
 	int watch = 0;
@@ -398,7 +399,7 @@ int main(int argc, char** argv) {
 	double progress = 0;
 
     do {
-		memset(buffer, 0, sizeof(buffer));
+		memset(buffer, 0, BUF_SIZE+1);
 		FILE* sink = fmemopen(buffer, sizeof(buffer), "w");
 
         time_t t = time(NULL);
@@ -406,7 +407,7 @@ int main(int argc, char** argv) {
         fprintf(stdout, "\e[J\33[2K\r");
 
 		fprintf(sink, "[ ");
-        hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900, &progress);
+        hour_name(sink, tm->tm_hour, tm->tm_min, tm->tm_sec, tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900, &progress);
         fprintf(sink, " | ");
 
 		// the `hour_name` function modifies the struct
@@ -420,6 +421,9 @@ int main(int argc, char** argv) {
 		fclose(sink);
 		
 		int buf_len = strlen(buffer);
+		if (buf_len > BUF_SIZE + 1) {
+			buf_len = BUF_SIZE + 1;
+		}
 		int bar_width = (int) (progress * (double) buf_len);
 		
 		// char buf = 0;
