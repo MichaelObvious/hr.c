@@ -346,13 +346,87 @@ void hour_name(FILE* sink, int hour, int minute, int sec, int day, int month, in
     }
 }
 
+// from hour_name
+void print_stats(FILE* sink) {
+	struct tm *tm;
+	time_t t = time(NULL);
+	tm = localtime(&t);
+
+	int day = tm->tm_mday;
+	int month = tm->tm_mon + 1;
+	int year = tm->tm_year + 1900;
+	int hour = tm->tm_hour;
+	int minute = tm->tm_min;
+	// int sec = tm->tm_sec;
+	fprintf(sink, "Current time:      %02d:%02d\n", hour, minute);
+
+	double yesterday_sunrise, yesterday_sunset;
+	double today_sunrise, today_sunset;
+	double tomorrow_sunrise, tomorrow_sunset;
+
+	// no problem for month, it automatically fixes itself
+	day_calc(day-1, month, year, LAT, LON, ELEV, &yesterday_sunrise, &yesterday_sunset);
+	day_calc(day, month, year, LAT, LON, ELEV, &today_sunrise, &today_sunset);
+	day_calc(day+1, month, year, LAT, LON, ELEV, &tomorrow_sunrise, &tomorrow_sunset);
+
+    t = yesterday_sunset;
+    tm = localtime(&t);
+	int prev_set_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
+
+    t = today_sunrise;
+    tm = localtime(&t);
+	int rise_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
+
+    t = today_sunset;
+    tm = localtime(&t);
+	int set_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
+
+    t = tomorrow_sunrise;
+    tm = localtime(&t);
+	int snd_rise_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
+
+	fprintf(sink, "Sunrise:           %02d:%02d\n", rise_time/3600, (rise_time%3600)/60);
+	fprintf(sink, "Sunset:            %02d:%02d\n", set_time/3600, (set_time%3600)/60);
+
+	int daylight_duration = set_time - rise_time;
+	int hour_duration = daylight_duration / 12;
+	fprintf(sink, "Hour duration:     %02dh %02dm\n", hour_duration/3600, (hour_duration%3600)/60);
+
+	int prev_night_duration = 24 * 3600 - prev_set_time + rise_time;
+	int prev_vigilia_duration = prev_night_duration / 4;
+	int next_night_duration = 24 * 3600 - set_time + snd_rise_time;
+	int next_vigilia_duration = next_night_duration / 4;
+	// int avg_night_duration = (prev_night_duration + next_night_duration) / 2;
+	int avg_vigilia_duration = (prev_vigilia_duration + next_vigilia_duration) / 2;
+	fprintf(sink, "Vigil duration:    %02dh %02dm\n", avg_vigilia_duration/3600, (avg_vigilia_duration%3600)/60);
+
+#if 0
+	int current_time = hour * 3600 + minute * 60 + sec;
+	double progress = 0;
+	if (current_time >= rise_time && current_time < set_time) {
+		progress = (double)((current_time - rise_time) % hour_duration) / (double) hour_duration;
+    } else {
+		int vigilia; 
+		if (current_time < rise_time) {
+			vigilia = (current_time + 24 * 60 - prev_set_time) / prev_vigilia_duration;
+			progress = (double)((current_time + 24 * 60 - prev_set_time) % prev_vigilia_duration) / (double) prev_vigilia_duration;
+		} else {
+			vigilia = (current_time - set_time) / next_vigilia_duration;
+			progress = (double)((current_time - set_time) % next_vigilia_duration) / (double) next_vigilia_duration;
+		}
+    }
+	fprintf(sink, "Current unit progress: %.2f%\n", progress*100);
+#endif
+}
+
 void print_usage(FILE* sink, char* program) {
-	fprintf(sink, "Usage: %s [-h] [-w] [-p]\n", program);
+	fprintf(sink, "Usage: %s [-h] [-w] [-p] [-s]\n", program);
 	// fprintf(sink, "\n");
 	fprintf(sink, "Options:\n");
 	fprintf(sink, "    -h  print help message and exit.\n");
 	fprintf(sink, "    -w  watch mode: continue running and updating.\n");
 	fprintf(sink, "    -p  show progress bar of the current hour/vigil.\n");
+	fprintf(sink, "    -s  print statistics and exit.\n");
 }
 
 #define BUF_SIZE 128
@@ -361,6 +435,8 @@ char buffer[BUF_SIZE+1] = {0};
 int main(int argc, char** argv) {
 	int watch = 0;
 	int pbar = 0;
+	int help = 0;
+	int stats = 0;
 
 	for (int i = 1; i < argc; i++) {
 		if (*argv[i] != '-') {
@@ -379,21 +455,25 @@ int main(int argc, char** argv) {
 				pbar = 1;
 				break;
 			case 'h':
-				print_usage(stdout, argv[0]);
-				return 0;
+				help = 1;
+				break;
+			case 's':
+				stats = 1;
+				break;
 			default:
 				fprintf(stderr, "[ERROR]: Unknown option: `%s`.\n\n", argv[i]);
 				print_usage(stderr, argv[0]);
 				return 1;
 			}
 		}
-    	if (strcmp(argv[i], "-w") == 0) {
-			
-		} else if (strcmp(argv[i], "-p") == 0) {
-			
-		} else if (strcmp(argv[i], "-h") == 0) {
-			
-		}
+	}
+
+	if (help) {
+		print_usage(stdout, argv[0]);
+		return 0;
+	} else if (stats) {
+		print_stats(stdout);
+		return 0;
 	}
 
 	double progress = 0;
