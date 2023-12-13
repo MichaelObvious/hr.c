@@ -358,7 +358,6 @@ void print_stats(FILE* sink) {
 	int hour = tm->tm_hour;
 	int minute = tm->tm_min;
 	// int sec = tm->tm_sec;
-	fprintf(sink, "Current time:      %02d:%02d\n", hour, minute);
 
 	double yesterday_sunrise, yesterday_sunset;
 	double today_sunrise, today_sunset;
@@ -385,12 +384,8 @@ void print_stats(FILE* sink) {
     tm = localtime(&t);
 	int snd_rise_time = tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec;
 
-	fprintf(sink, "Sunrise:           %02d:%02d\n", rise_time/3600, (rise_time%3600)/60);
-	fprintf(sink, "Sunset:            %02d:%02d\n", set_time/3600, (set_time%3600)/60);
-
 	int daylight_duration = set_time - rise_time;
 	int hour_duration = daylight_duration / 12;
-	fprintf(sink, "Hour duration:     %02dh %02dm\n", hour_duration/3600, (hour_duration%3600)/60);
 
 	int prev_night_duration = 24 * 3600 - prev_set_time + rise_time;
 	int prev_vigilia_duration = prev_night_duration / 4;
@@ -398,10 +393,21 @@ void print_stats(FILE* sink) {
 	int next_vigilia_duration = next_night_duration / 4;
 	// int avg_night_duration = (prev_night_duration + next_night_duration) / 2;
 	int avg_vigilia_duration = (prev_vigilia_duration + next_vigilia_duration) / 2;
-	fprintf(sink, "Vigil duration:    %02dh %02dm\n", avg_vigilia_duration/3600, (avg_vigilia_duration%3600)/60);
 
+	int midday = rise_time + 6 * hour_duration;
+	int midnight = ((prev_set_time + set_time) / 2 + 2 * avg_vigilia_duration) % (24 * 3600);
+
+	fprintf(sink, "Current time:          %02d:%02d\n", hour, minute);
+	fprintf(sink, "Times:\n");
+	fprintf(sink, "  - Sunrise:           %02d:%02d\n", rise_time/3600, (rise_time%3600)/60);
+	fprintf(sink, "  - Midday:            %02d:%02d\n", midday/3600, (midday%3600)/60);
+	fprintf(sink, "  - Sunset:            %02d:%02d\n", set_time/3600, (set_time%3600)/60);
+	fprintf(sink, "  - Midnight:          %02d:%02d\n", midnight/3600, (midnight%3600)/60);
+	fprintf(sink, "Durations:\n");
+	fprintf(sink, "  - Hour duration:     %02dh %02dm\n", hour_duration/3600, (hour_duration%3600)/60);
+	fprintf(sink, "  - Vigil duration:    %02dh %02dm\n", avg_vigilia_duration/3600, (avg_vigilia_duration%3600)/60);
 #if 0
-	int current_time = hour * 3600 + minute * 60 + sec;
+	// int current_time = hour * 3600 + minute * 60 + sec;
 	double progress = 0;
 	if (current_time >= rise_time && current_time < set_time) {
 		progress = (double)((current_time - rise_time) % hour_duration) / (double) hour_duration;
