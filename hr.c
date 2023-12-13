@@ -510,16 +510,16 @@ int main(int argc, char** argv) {
 		if (buf_len > BUF_SIZE + 1) {
 			buf_len = BUF_SIZE + 1;
 		}
-		int bar_width = (int) (progress * (double) buf_len);
+		int bar_width = (int) (progress * (double) (buf_len - 2));
 		
 		// char buf = 0;
-		if (pbar)
-			fprintf(stdout, "\033[4m");
 		int end_placed = 0;
 		for (int i = 0; i < buf_len; i++) {
+			if (pbar && i == 1)
+				fprintf(stdout, "\033[4m");
 			// buf = buffer[i];
 			fputc(buffer[i], stdout);
-			if (pbar && (buffer[i] != '\xC4' && buffer[i] != '\xC5') && !end_placed && (i >= bar_width || i + 1 == buf_len)) {
+			if (pbar && (buffer[i] != '\xC4' && buffer[i] != '\xC5') && !end_placed && (i >= bar_width || i + 2 == buf_len)) {
 				fprintf(stdout, "\033[0m");
 				end_placed = 1;
 			}
