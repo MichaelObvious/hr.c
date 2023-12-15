@@ -275,46 +275,47 @@ void hour_name(FILE* sink, int hour, int minute, int sec, int day, int month, in
 
 	if (current_time >= rise_time && current_time < set_time) {
 		*progress = (double)((current_time - rise_time) % hour_duration) / (double) hour_duration;
-		switch((current_time - rise_time) / hour_duration) {
-			case 0:
-				fprintf(sink, "prīma");
-                break;
-			case 1:
-				fprintf(sink, "secunda");
-                break;
-			case 2:
-				fprintf(sink, "tertia");
-                break;
-			case 3:
-				fprintf(sink, "quārta");
-                break;
-			case 4:
-				fprintf(sink, "quīnta");
-                break;
-			case 5:
-				fprintf(sink, "sexta");
-                break;
-			case 6:
-				fprintf(sink, "septima");
-                break;
-			case 7:
-				fprintf(sink, "octāva");
-                break;
-			case 8:
-				fprintf(sink, "nōna");
-                break;
-			case 9:
-				fprintf(sink, "decima");
-                break;
-			case 10:
-				fprintf(sink, "ūndecima");
-                break;
-			case 11:
-				fprintf(sink, "duodecima");
-                break;
-            default:
-                assert(0 && "unreacheable");
-        }
+		roman_numeral(sink, ((current_time - rise_time) / hour_duration) + 1);
+		// switch((current_time - rise_time) / hour_duration) {
+		// 	case 0:
+		// 		fprintf(sink, "prīma");
+        //         break;
+		// 	case 1:
+		// 		fprintf(sink, "secunda");
+        //         break;
+		// 	case 2:
+		// 		fprintf(sink, "tertia");
+        //         break;
+		// 	case 3:
+		// 		fprintf(sink, "quārta");
+        //         break;
+		// 	case 4:
+		// 		fprintf(sink, "quīnta");
+        //         break;
+		// 	case 5:
+		// 		fprintf(sink, "sexta");
+        //         break;
+		// 	case 6:
+		// 		fprintf(sink, "septima");
+        //         break;
+		// 	case 7:
+		// 		fprintf(sink, "octāva");
+        //         break;
+		// 	case 8:
+		// 		fprintf(sink, "nōna");
+        //         break;
+		// 	case 9:
+		// 		fprintf(sink, "decima");
+        //         break;
+		// 	case 10:
+		// 		fprintf(sink, "ūndecima");
+        //         break;
+		// 	case 11:
+		// 		fprintf(sink, "duodecima");
+        //         break;
+        //     default:
+        //         assert(0 && "unreacheable");
+        // }
 		fprintf(sink, " diēī hōra");
     } else {
 		int vigilia; 
@@ -326,22 +327,23 @@ void hour_name(FILE* sink, int hour, int minute, int sec, int day, int month, in
 			*progress = (double)((current_time - set_time) % next_vigilia_duration) / (double) next_vigilia_duration;
 		}
 
-		switch (vigilia) {
-			case 0:
-				fprintf(sink, "prīma");
-                break;
-			case 1:
-				fprintf(sink, "secunda");
-                break;
-			case 2:
-				fprintf(sink, "tertia");
-                break;
-			case 3:
-				fprintf(sink, "quārta");
-                break;
-            default:
-                assert(0 && "unreacheable");
-        }
+		roman_numeral(sink, vigilia + 1);
+		// switch (vigilia) {
+		// 	case 0:
+		// 		fprintf(sink, "prīma");
+        //         break;
+		// 	case 1:
+		// 		fprintf(sink, "secunda");
+        //         break;
+		// 	case 2:
+		// 		fprintf(sink, "tertia");
+        //         break;
+		// 	case 3:
+		// 		fprintf(sink, "quārta");
+        //         break;
+        //     default:
+        //         assert(0 && "unreacheable");
+        // }
 		fprintf(sink, " noctis vigilia");
     }
 }
