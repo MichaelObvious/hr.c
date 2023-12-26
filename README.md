@@ -1,4 +1,4 @@
-# hr - Hōrologium Rōmānum
+# hr.c - Hōrologium Rōmānum
 
 A somewhat accurate ancient roman clock.
 
